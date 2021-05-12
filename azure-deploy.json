@@ -1,0 +1,232 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "ci_acr_cleanup_name": {
+            "defaultValue": "ci-acr-cleanup",
+            "type": "string"
+        },
+        "logic_acr_cleanup_name": {
+            "defaultValue": "logic-acr-cleanup",
+            "type": "string"
+        },
+        "id_ci_acr_cleanup_name": {
+            "defaultValue": "id-ci-acr-cleanup",
+            "type": "string"
+        },
+        "api_aci_acr_cleanup_name": {
+            "defaultValue": "api-aci-acr-cleanup",
+            "type": "string"
+        },
+        "recurrence_days": {
+            "defaultValue": 7,
+            "type": "int",
+            "metadata": {
+                "description": "Run Logic App every x days"
+            }
+        }
+    },
+    "variables": {
+        "ContributorRole": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.ManagedIdentity/userAssignedIdentities",
+            "apiVersion": "2018-11-30",
+            "name": "[parameters('id_ci_acr_cleanup_name')]",
+            "location": "[resourceGroup().location]"
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2018-09-01-preview",
+            "name": "[guid(parameters('logic_acr_cleanup_name'), variables('ContributorRole'), resourceGroup().id)]",
+            "properties": {
+                "roleDefinitionId": "[variables('ContributorRole')]",
+                "principalId": "[reference(resourceId('Microsoft.Logic/workflows', parameters('logic_acr_cleanup_name')), '2019-05-01', 'full').identity.principalId]",
+                "principalType": "ServicePrincipal"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Logic/workflows', parameters('logic_acr_cleanup_name'))]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/connections",
+            "apiVersion": "2016-06-01",
+            "name": "[parameters('api_aci_acr_cleanup_name')]",
+            "location": "[resourceGroup().location]",
+            "kind": "V1",
+            "properties": {
+                "displayName": "[parameters('api_aci_acr_cleanup_name')]",
+                "customParameterValues": {},
+                "parameterValueType": "Alternative",
+                "api": {
+                    "id": "[concat('/subscriptions/', uriComponent(subscription().subscriptionId), '/providers/Microsoft.Web/locations/', uriComponent(resourceGroup().location), '/managedApis/aci')]"
+                }
+            }
+        },
+        {
+            "type": "Microsoft.Logic/workflows",
+            "apiVersion": "2019-05-01",
+            "name": "[parameters('logic_acr_cleanup_name')]",
+            "location": "[resourceGroup().location]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/connections', parameters('api_aci_acr_cleanup_name'))]"
+            ],
+            "identity": {
+                "type": "SystemAssigned"
+            },
+            "properties": {
+                "state": "Enabled",
+                "definition": {
+                    "$schema": "https://schema.management.azure.com/providers/Microsoft.Logic/schemas/2016-06-01/workflowdefinition.json#",
+                    "contentVersion": "1.0.0.0",
+                    "parameters": {
+                        "$connections": {
+                            "defaultValue": {},
+                            "type": "Object"
+                        }
+                    },
+                    "triggers": {
+                        "Recurrence": {
+                            "recurrence": {
+                                "frequency": "Day",
+                                "interval": "[parameters('recurrence_days')]"
+                            },
+                            "type": "Recurrence"
+                        }
+                    },
+                    "actions": {
+                        "Create_or_update_a_container_group": {
+                            "runAfter": {
+                                "For_each": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "body": {
+                                    "identity": {
+                                        "type": "UserAssigned",
+                                        "userAssignedIdentities": {
+                                            "[concat('/subscriptions/', uriComponent(subscription().subscriptionId), '/resourcegroups/', uriComponent(resourceGroup().name), '/providers/microsoft.managedidentity/userassignedidentities/', uriComponent(parameters('id_ci_acr_cleanup_name')))]": {}
+                                        }
+                                    },
+                                    "location": "[resourceGroup().location]",
+                                    "properties": {
+                                        "containers": [
+                                            {
+                                                "name": "acr-cleanup",
+                                                "properties": {
+                                                    "image": "ghcr.io/michiwerner/acr-cleanup:latest",
+                                                    "resources": {
+                                                        "limits": {
+                                                            "cpu": 1,
+                                                            "memoryInGB": 0.5
+                                                        },
+                                                        "requests": {
+                                                            "cpu": 1,
+                                                            "memoryInGB": 0.5
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        ],
+                                        "osType": "Linux",
+                                        "restartPolicy": "Never",
+                                        "sku": "Standard"
+                                    }
+                                },
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['aci']['connectionId']"
+                                    }
+                                },
+                                "method": "put",
+                                "path": "[concat('/subscriptions/', uriComponent(subscription().subscriptionId), '/resourceGroups/', uriComponent(resourceGroup().name), '/providers/Microsoft.ContainerInstance/containerGroups/', uriComponent(parameters('ci_acr_cleanup_name')))]",
+                                "queries": {
+                                    "x-ms-api-version": "2019-12-01"
+                                }
+                            }
+                        },
+                        "For_each": {
+                            "foreach": "@body('Get_a_list_of_container_groups_in_a_subscription')?['value']",
+                            "actions": {
+                                "Condition": {
+                                    "actions": {
+                                        "Delete_a_container_group": {
+                                            "runAfter": {},
+                                            "type": "ApiConnection",
+                                            "inputs": {
+                                                "host": {
+                                                    "connection": {
+                                                        "name": "@parameters('$connections')['aci']['connectionId']"
+                                                    }
+                                                },
+                                                "method": "delete",
+                                                "path": "[concat('/subscriptions/', uriComponent(subscription().subscriptionId), '/resourceGroups/', uriComponent(resourceGroup().name), '/providers/Microsoft.ContainerInstance/containerGroups/', uriComponent(parameters('ci_acr_cleanup_name')))]",
+                                                "queries": {
+                                                    "x-ms-api-version": "2019-12-01"
+                                                }
+                                            }
+                                        }
+                                    },
+                                    "runAfter": {},
+                                    "expression": {
+                                        "and": [
+                                            {
+                                                "equals": [
+                                                    "@items('For_each')?['name']",
+                                                    "ci-acr-cleanup"
+                                                ]
+                                            }
+                                        ]
+                                    },
+                                    "type": "If"
+                                }
+                            },
+                            "runAfter": {
+                                "Get_a_list_of_container_groups_in_a_subscription": [
+                                    "Succeeded"
+                                ]
+                            },
+                            "type": "Foreach"
+                        },
+                        "Get_a_list_of_container_groups_in_a_subscription": {
+                            "runAfter": {},
+                            "type": "ApiConnection",
+                            "inputs": {
+                                "host": {
+                                    "connection": {
+                                        "name": "@parameters('$connections')['aci']['connectionId']"
+                                    }
+                                },
+                                "method": "get",
+                                "path": "[concat('/subscriptions/', uriComponent(subscription().subscriptionId), '/resourceGroups/', uriComponent(resourceGroup().name), '/providers/Microsoft.ContainerInstance/containerGroups')]",
+                                "queries": {
+                                    "x-ms-api-version": "2019-12-01"
+                                }
+                            }
+                        }
+                    },
+                    "outputs": {}
+                },
+                "parameters": {
+                    "$connections": {
+                        "value": {
+                            "aci": {
+                                "connectionId": "[resourceId('Microsoft.Web/connections', parameters('api_aci_acr_cleanup_name'))]",
+                                "connectionName": "[parameters('api_aci_acr_cleanup_name')]",
+                                "connectionProperties": {
+                                    "authentication": {
+                                        "type": "ManagedServiceIdentity"
+                                    }
+                                },
+                                "id": "[concat('/subscriptions/', uriComponent(subscription().subscriptionId), '/providers/Microsoft.Web/locations/', uriComponent(resourceGroup().location), '/managedApis/aci')]"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    ]
+}
