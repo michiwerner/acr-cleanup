@@ -19,4 +19,5 @@ jobs:
         with:
           push: true
           context: src
+          dockerfile: src/Dockerfile
           tags: ghcr.io/michiwerner/acr-cleanup:latest
