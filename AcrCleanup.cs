@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics.Tracing;
 using Microsoft.Rest;
 using Microsoft.Azure.WebJobs;
-using Microsoft.Azure.WebJobs.Host;
 using Microsoft.Extensions.Logging;
 using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
