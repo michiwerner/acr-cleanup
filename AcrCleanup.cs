@@ -50,6 +50,7 @@ namespace AcrCleanup
         }
         private static void ProcessSubscription(ISubscription subscription, ILogger log)
         {
+            log.LogInformation($"Processing subscription {subscription.SubscriptionId} ...");
             var azure = Microsoft.Azure.Management.Fluent.Azure.Configure().Authenticate(DefaultAzureCredentials).WithSubscription(subscription.SubscriptionId);
             var containerRegistries = azure.ContainerRegistries.List();
             var tasks = new List<Task>();
@@ -72,6 +73,7 @@ namespace AcrCleanup
 
         private static void ProcessContainerRegistry(IRegistry containerRegistry, ILogger log)
         {
+            log.LogInformation($"Processing container registry {containerRegistry.Name} ...");
             var clientOptions = new ContainerRegistryClientOptions()
             {
                 Retry =
@@ -104,6 +106,7 @@ namespace AcrCleanup
 
         private static void ProcessRepository(ContainerRegistryClient client, string repositoryName, ILogger log)
         {
+            log.LogInformation($"Processing repository {repositoryName} ...");
             var tasks = new List<Task>();
             Azure.Containers.ContainerRegistry.ContainerRepository repository = client.GetRepository(repositoryName);
             var manifests = repository.GetManifestPropertiesCollection();
@@ -111,6 +114,7 @@ namespace AcrCleanup
             {
                 if (manifest.Tags.Count < 1)
                 {
+                    log.LogInformation($"Found untagged manifest {repositoryName}:{manifest.Digest}. Will delete.");
                     tasks.Add(client.GetArtifact(repositoryName, manifest.Digest).DeleteAsync());
                 }
             }
