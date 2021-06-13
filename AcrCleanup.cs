@@ -17,10 +17,10 @@ namespace AcrCleanup
 {
     public static class AcrCleanup
     {
-        static DefaultAzureCredential DefaultCredential;
-        static string DefaultToken;
-        static TokenCredentials DefaultTokenCredentials;
-        static AzureCredentials DefaultAzureCredentials;
+        private static DefaultAzureCredential DefaultCredential;
+        private static string DefaultToken;
+        private static TokenCredentials DefaultTokenCredentials;
+        private static AzureCredentials DefaultAzureCredentials;
 
         [FunctionName("AcrCleanup")]
         public static void Run([TimerTrigger("%CLEANUP_SCHEDULE%")] TimerInfo myTimer, ILogger log)
@@ -53,7 +53,7 @@ namespace AcrCleanup
                 }
             }
         }
-        static void ProcessSubscription(ISubscription subscription, ILogger log)
+        private static void ProcessSubscription(ISubscription subscription, ILogger log)
         {
             var azure = Microsoft.Azure.Management.Fluent.Azure.Configure().Authenticate(DefaultAzureCredentials).WithSubscription(subscription.SubscriptionId);
             var containerRegistries = azure.ContainerRegistries.List();
@@ -75,7 +75,7 @@ namespace AcrCleanup
             }
         }
 
-        static void ProcessContainerRegistry(IRegistry containerRegistry, ILogger log)
+        private static void ProcessContainerRegistry(IRegistry containerRegistry, ILogger log)
         {
             var clientOptions = new ContainerRegistryClientOptions()
             {
@@ -107,7 +107,7 @@ namespace AcrCleanup
             }
         }
 
-        static void ProcessRepository(ContainerRegistryClient client, string repositoryName, ILogger log)
+        private static void ProcessRepository(ContainerRegistryClient client, string repositoryName, ILogger log)
         {
             var tasks = new List<Task>();
             Azure.Containers.ContainerRegistry.ContainerRepository repository = client.GetRepository(repositoryName);
