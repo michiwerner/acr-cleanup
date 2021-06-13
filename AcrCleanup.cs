@@ -25,11 +25,6 @@ namespace AcrCleanup
         [FunctionName("AcrCleanup")]
         public static void Run([TimerTrigger("%CLEANUP_SCHEDULE%")] TimerInfo myTimer, ILogger log)
         {
-            using AzureEventSourceListener listener = new AzureEventSourceListener((e, message) =>
-            {
-                log.LogInformation(message);
-            },
-            level: EventLevel.Informational);
             DefaultCredential = new DefaultAzureCredential();
             DefaultToken = DefaultCredential.GetToken(new TokenRequestContext(new[] { "https://management.azure.com/.default" })).Token;
             DefaultTokenCredentials = new TokenCredentials(DefaultToken);
