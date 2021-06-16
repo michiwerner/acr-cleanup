@@ -2,7 +2,7 @@
 
 ## What?
 
-This is an Azure Function App project that provides the functionality of deleting untagged manifests (images) from an Azure Container Registry. It supports both scheduled cleanups and cleanups triggered by image push events.
+This is an Azure Function App project that provides the functionality of scheduled deletion of untagged manifests (images) from Azure Container Registries.
 
 ## Why?
 
@@ -30,9 +30,21 @@ SOFTWARE.
 
 ### Installation / Deployment
 
-Before you can deploy this Function App to Azure, you will first need to create an Azure Function App in the Azure Portal or via the Azure CLI / Powershell Az Module. As runtime, choose Node.js in version 14 LTS. For the plan, in most cases Consumption will be the right choice since the cleanup functions will only run a few times a day. This is not true, though, if you either set the schedule for the scheduled cleanup to run very often (not recommended), or have a high number of image push events that trigger the cleanup-on-image-push function. In these cases, choosing a different plan option might help you avoid high costs. After creating the Funtion App, __enable its system-assigned managed identity__.
+Before you can deploy this Function App to Azure, you will first need to create an Azure Function App in the Azure Portal or via the Azure CLI / Powershell Az Module. As runtime, choose .NET Core 3.1. For the plan, choose Consumption on Windows. In most cases Consumption will be the right choice since the cleanup function will only run once or a few times per day. If you want to see logs, you will also want to create an Application Insights instance in the Function App creation process.
 
-The next step is to either download the contents of this repository or clone them:
+After creating the Function App, __enable its system-assigned managed identity__.
+
+For the actual deployment of this function you can go the manual or automatic way.
+
+#### Automatic Deployment
+
+With this deployment type, your Azure Function App will get the source from the GitHub repository, install required npm packages, and deploy the result to the production slot. Plus: If you want to update the app in the future, there is a handy Sync button available that will trigger a fresh deployment with the current code from GitHub.
+
+To set this up, go to the Deployment Center, choose the External Git Code Source option, fill in https://github.com/michiwerner/acr-cleanup.git as the repository, and set branch to main. Then just hit the Save button and the app will trigger a deployment.
+
+#### Manual Deployment
+
+The first step is to either download the contents of this repository or clone them:
 `git clone https://github.com/michiwerner/acr-cleanup.git`
 
 For the actual deployment of the code - both first-time setup and updates - one of the easiest ways is to use Visual Studio Code. If you choose this option, please refer to https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/tutorial-vscode-serverless-node-deploy-hosting for a comprehensive guide.
@@ -48,7 +60,7 @@ If you don't want to use Visual Studio Code, you can deploy the code via command
 
 To allow the app to actually access your ACR registries, you must do one of two things, depending on the scope you want the app to have:
 
-1) Manually select the ACR's: Add a new role assignment to each relevant ACR and assign the AcrDelete role to the Function App's system-assigned managed identity.
-2) Automatically run on all ACR's in a scope: If you want the app to automatically pick up new registries without you having to assign roles first, you would need to assign the AcrDelete role at a subscription or resource group level so that new ACR instances inherit the role assignment. Please keep in mind that the current version of this app is only tested for use with ACR instances that reside in the same Azure Subscription as the app itself.
+1) Manually select the ACR's: Add two new role assignments to each relevant ACR and assign the AcrDelete and Reader roles to the Function App's system-assigned managed identity.
+2) Automatically run on all ACR's in a scope: If you want the app to automatically pick up new registries without you having to assign roles first, you would need to assign the AcrDelete and Reader roles at a subscription or resource group level so that new ACR instances inherit the role assignment.
 
-Also review the `schedule` attribute inside the `scheduled-cleanup/function.json` file. The default is to run the function every day at 00:00:00 UTC. You can freely change this schedule, but remember that the more often the function runs, the more cost it will generate. Please refer to https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=csharp#ncrontab-expressions for help on the format. Make sure to (re-)deploy the app after making any changes to files.
+The last step is to set the schedule for the cleanup runs. For this, create an application setting `CLEANUP_SCHEDULE` and set it to a cron expression. Please refer to https://docs.microsoft.com/en-us/azure/azure-functions/functions-bindings-timer?tabs=csharp#ncrontab-expressions for help on the format. A warning for people who are used to the standard crontab format: The first column in the 6-column format used here are *SECONDS*, not minutes.
