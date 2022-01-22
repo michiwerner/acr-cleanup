@@ -38,7 +38,7 @@ For the actual deployment of this function you can go the manual or automatic wa
 
 #### Automatic Deployment
 
-With this deployment type, your Azure Function App will get the source from the GitHub repository, install required npm packages, and deploy the result to the production slot. Plus: If you want to update the app in the future, there is a handy Sync button available that will trigger a fresh deployment with the current code from GitHub.
+With this deployment type, your Azure Function App will get the source from the GitHub repository, install required packages, and deploy the result to the production slot. Plus: If you want to update the app in the future, there is a handy Sync button available that will trigger a fresh deployment with the current code from GitHub.
 
 To set this up, go to the Deployment Center, choose the External Git Code Source option, fill in https://github.com/michiwerner/acr-cleanup.git as the repository, and set branch to main. Then just hit the Save button and the app will trigger a deployment.
 
