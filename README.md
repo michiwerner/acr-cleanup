@@ -36,11 +36,13 @@ After creating the Function App, __enable its system-assigned managed identity__
 
 For the actual deployment of this function you can go the manual or automatic way.
 
+**Please note:** Depending on the Azure Functions version you are using, different .NET versions are available. For this reason, please use the `azfunc-v3` and `azfunc-v4` branches for deployments to Azure Functions version 3 and 4, respectively.
+
 #### Automatic Deployment
 
 With this deployment type, your Azure Function App will get the source from the GitHub repository, install required packages, and deploy the result to the production slot. Plus: If you want to update the app in the future, there is a handy Sync button available that will trigger a fresh deployment with the current code from GitHub.
 
-To set this up, go to the Deployment Center, choose the External Git Code Source option, fill in https://github.com/michiwerner/acr-cleanup.git as the repository, and set branch to main. Then just hit the Save button and the app will trigger a deployment.
+To set this up, go to the Deployment Center, choose the External Git Code Source option, fill in https://github.com/michiwerner/acr-cleanup.git as the repository, and set branch to either `azfunc-v3` or `azfunc-v4`, depending on the Azure Functions version you are using. Then just hit the Save button and the app will trigger a deployment.
 
 #### Manual Deployment
 
