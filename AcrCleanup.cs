@@ -82,7 +82,8 @@ namespace AcrCleanup
                     MaxDelay = TimeSpan.FromSeconds(30),
                     MaxRetries = 25,
                     Mode = RetryMode.Exponential
-                }
+                },
+                Audience = ContainerRegistryAudience.AzureResourceManagerPublicCloud
             };
             var client = new ContainerRegistryClient(new Uri($"https://{containerRegistry.Name}.azurecr.io"), DefaultCredential, clientOptions);
             var repositoryNames = client.GetRepositoryNames();
