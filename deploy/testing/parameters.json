@@ -1,0 +1,69 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "name": {
+            "value": "funcacrcleanup"
+        },
+        "location": {
+            "value": "germanywestcentral"
+        },
+        "hostingPlanName": {
+            "value": "ASP-acr-cleanup-ci-test"
+        },
+        "serverFarmResourceGroup": {
+            "value": "rg-acr-cleanup-ci-test"
+        },
+        "alwaysOn": {
+            "value": false
+        },
+        "storageAccountName": {
+            "value": "stacrcleanupcitest"
+        },
+        "sku": {
+            "value": "Dynamic"
+        },
+        "skuCode": {
+            "value": "Y1"
+        },
+        "workerSize": {
+            "value": "0"
+        },
+        "workerSizeId": {
+            "value": "0"
+        },
+        "numberOfWorkers": {
+            "value": "1"
+        },
+        "use32BitWorkerProcess": {
+            "value": true
+        },
+        "netFrameworkVersion": {
+            "value": "v6.0"
+        },
+        "cleanupSchedule": {
+            "value": "0 * * * * *"
+        },
+        "acrRegistryName": {
+            "value": "cracrcleanupcitest"
+        },
+        "acrRegistryLocation": {
+            "value": "germanywestcentral"
+        },
+        "acrZoneRedundancy": {
+            "value": "disabled"
+        },
+        "acrRegistrySku": {
+            "value": "Basic"
+        },
+        "acrRegistryApiVersion": {
+            "value": "2020-11-01-preview"
+        },
+        "tags": {
+            "value": {}
+        },
+        "acrPublicNetworkAccess": {
+            "value": "Enabled"
+        }
+    }
+}
