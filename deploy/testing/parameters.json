@@ -48,7 +48,7 @@
             "value": "cracrcleanupcitest"
         },
         "acrRegistryLocation": {
-            "value": "germanywestcentral"
+            "value": "eastus"
         },
         "acrZoneRedundancy": {
             "value": "disabled"
