@@ -6,7 +6,7 @@
             "value": "funcacrcleanup"
         },
         "location": {
-            "value": "germanywestcentral"
+            "value": "eastus"
         },
         "hostingPlanName": {
             "value": "ASP-acr-cleanup-ci-test"
