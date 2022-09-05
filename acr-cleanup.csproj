@@ -9,7 +9,7 @@
     <PackageReference Include="Microsoft.Azure.Management.Fluent" Version="1.38.0" />
     <PackageReference Include="Microsoft.Azure.Management.ResourceManager.Fluent" Version="1.38.0" />
     <PackageReference Include="Microsoft.Azure.Management.ContainerRegistry.Fluent" Version="1.38.0" />
-    <PackageReference Include="Azure.Containers.ContainerRegistry" Version="1.1.0-beta.3" />
+    <PackageReference Include="Azure.Containers.ContainerRegistry" Version="1.0.0" />
     <PackageReference Include="Azure.Identity" Version="1.5.0" />
   </ItemGroup>
   <ItemGroup>

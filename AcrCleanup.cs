@@ -110,7 +110,7 @@ namespace AcrCleanup
             log.LogInformation($"Processing repository {repositoryName} ...");
             var tasks = new List<Task>();
             Azure.Containers.ContainerRegistry.ContainerRepository repository = client.GetRepository(repositoryName);
-            var manifests = repository.GetManifestPropertiesCollection();
+            var manifests = repository.GetAllManifestProperties();
             foreach (var manifest in manifests)
             {
                 if (manifest.Tags.Count < 1)
