@@ -1,7 +1,6 @@
 using System;
 using System.Threading.Tasks;
 using System.Collections.Generic;
-using System.Diagnostics.Tracing;
 using Microsoft.Rest;
 using Microsoft.Azure.WebJobs;
 using Microsoft.Extensions.Logging;
@@ -9,7 +8,6 @@ using Microsoft.Azure.Management.ResourceManager.Fluent;
 using Microsoft.Azure.Management.ResourceManager.Fluent.Authentication;
 using Microsoft.Azure.Management.ContainerRegistry.Fluent;
 using Azure.Core;
-using Azure.Core.Diagnostics;
 using Azure.Identity;
 using Azure.Containers.ContainerRegistry;
 
