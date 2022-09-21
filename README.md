@@ -1,5 +1,7 @@
 # acr-cleanup
 
+![Testing](https://github.com/michiwerner/acr-cleanup/actions/workflows/testing.yml/badge.svg)
+
 ## What?
 
 This is an Azure Function App project that provides the functionality of scheduled deletion of untagged manifests (images) from Azure Container Registries.
