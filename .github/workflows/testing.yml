@@ -24,7 +24,7 @@ jobs:
           subscriptionId: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
           resourceGroupName: ${{ secrets.AZURE_RG_NAME }}
           template: ./deploy/testing/template.json
-          parameters: ./deploy/testing/parameters.json
+          parameters: ./deploy/testing/parameters.json branchName=${{ github.ref }}
           deploymentMode: Complete
           deploymentName: acr-cleanup-testing
       - name: Login to ACR
