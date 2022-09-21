@@ -64,6 +64,9 @@
         },
         "acrPublicNetworkAccess": {
             "type": "string"
+        },
+        "branchName": {
+            "type": "string"
         }
     },
     "variables": {},
@@ -133,7 +136,7 @@
                     ],
                     "properties": {
                         "RepoUrl": "https://github.com/michiwerner/acr-cleanup.git",
-                        "branch": "azfunc-v4",
+                        "branch": "[parameters('branchName')]",
                         "IsManualIntegration": true
                     }
                 }

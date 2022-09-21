@@ -64,6 +64,9 @@
         },
         "acrPublicNetworkAccess": {
             "value": "Enabled"
+        },
+        "branchName": {
+            "value": "azfunc-v4"
         }
     }
 }
