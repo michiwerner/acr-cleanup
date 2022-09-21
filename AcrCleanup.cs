@@ -13,26 +13,38 @@ using Azure.Containers.ContainerRegistry;
 
 namespace AcrCleanup
 {
-    public static class AcrCleanup
+    public class AcrCleanup
     {
-        private static DefaultAzureCredential DefaultCredential;
-        private static string DefaultToken;
-        private static TokenCredentials DefaultTokenCredentials;
-        private static AzureCredentials DefaultAzureCredentials;
+        private DefaultAzureCredential DefaultCredential;
+        private string DefaultToken;
+        private TokenCredentials DefaultTokenCredentials;
+        private AzureCredentials DefaultAzureCredentials;
+        private ILogger Log;
 
         [FunctionName("AcrCleanup")]
         public static void Run([TimerTrigger("%CLEANUP_SCHEDULE%")] TimerInfo myTimer, ILogger log)
         {
+            var cleanup = new AcrCleanup(log);
+            cleanup.ProcessAllSubscriptions();
+        }
+
+        private AcrCleanup(ILogger log)
+        {
+            Log = log;
             DefaultCredential = new DefaultAzureCredential();
             DefaultToken = DefaultCredential.GetToken(new TokenRequestContext(new[] { "https://management.azure.com/.default" })).Token;
             DefaultTokenCredentials = new TokenCredentials(DefaultToken);
             DefaultAzureCredentials = new AzureCredentials(DefaultTokenCredentials, DefaultTokenCredentials, null, AzureEnvironment.AzureGlobalCloud);
+        }
+
+        private void ProcessAllSubscriptions()
+        {
             var azure = Microsoft.Azure.Management.Fluent.Azure.Configure().Authenticate(DefaultAzureCredentials).WithDefaultSubscription();
             var subscriptions = azure.Subscriptions.List();
             var tasks = new List<Task>();
             foreach (var subscription in subscriptions)
             {
-                tasks.Add(Task.Run(() => ProcessSubscription(subscription, log)));
+                tasks.Add(Task.Run(() => ProcessSubscription(subscription)));
             }
             try
             {
@@ -42,19 +54,20 @@ namespace AcrCleanup
             {
                 foreach (var e in ae.InnerExceptions)
                 {
-                    log.LogError(e.Message);
+                    Log.LogError(e.Message);
                 }
             }
         }
-        private static void ProcessSubscription(ISubscription subscription, ILogger log)
+
+        private void ProcessSubscription(ISubscription subscription)
         {
-            log.LogInformation($"Processing subscription {subscription.SubscriptionId} ...");
+            Log.LogInformation($"Processing subscription {subscription.SubscriptionId} ...");
             var azure = Microsoft.Azure.Management.Fluent.Azure.Configure().Authenticate(DefaultAzureCredentials).WithSubscription(subscription.SubscriptionId);
             var containerRegistries = azure.ContainerRegistries.List();
             var tasks = new List<Task>();
             foreach (var containerRegistry in containerRegistries)
             {
-                tasks.Add(Task.Run(() => ProcessContainerRegistry(containerRegistry, log)));
+                tasks.Add(Task.Run(() => ProcessContainerRegistry(containerRegistry)));
             }
             try
             {
@@ -64,14 +77,14 @@ namespace AcrCleanup
             {
                 foreach (var e in ae.InnerExceptions)
                 {
-                    log.LogError(e.Message);
+                    Log.LogError(e.Message);
                 }
             }
         }
 
-        private static void ProcessContainerRegistry(IRegistry containerRegistry, ILogger log)
+        private void ProcessContainerRegistry(IRegistry containerRegistry)
         {
-            log.LogInformation($"Processing container registry {containerRegistry.Name} ...");
+            Log.LogInformation($"Processing container registry {containerRegistry.Name} ...");
             var clientOptions = new ContainerRegistryClientOptions()
             {
                 Retry =
@@ -88,7 +101,7 @@ namespace AcrCleanup
             var tasks = new List<Task>();
             foreach (var repositoryName in repositoryNames)
             {
-                tasks.Add(Task.Run(() => ProcessRepository(client, repositoryName, log)));
+                tasks.Add(Task.Run(() => ProcessRepository(client, repositoryName)));
             }
             try
             {
@@ -98,14 +111,14 @@ namespace AcrCleanup
             {
                 foreach (var e in ae.InnerExceptions)
                 {
-                    log.LogError(e.Message);
+                    Log.LogError(e.Message);
                 }
             }
         }
 
-        private static void ProcessRepository(ContainerRegistryClient client, string repositoryName, ILogger log)
+        private void ProcessRepository(ContainerRegistryClient client, string repositoryName)
         {
-            log.LogInformation($"Processing repository {repositoryName} ...");
+            Log.LogInformation($"Processing repository {repositoryName} ...");
             var tasks = new List<Task>();
             Azure.Containers.ContainerRegistry.ContainerRepository repository = client.GetRepository(repositoryName);
             var manifests = repository.GetAllManifestProperties();
@@ -113,7 +126,7 @@ namespace AcrCleanup
             {
                 if (manifest.Tags.Count < 1)
                 {
-                    log.LogInformation($"Found untagged manifest {repositoryName}:{manifest.Digest}. Will delete.");
+                    Log.LogInformation($"Found untagged manifest {repositoryName}:{manifest.Digest}. Will delete.");
                     tasks.Add(client.GetArtifact(repositoryName, manifest.Digest).DeleteAsync());
                 }
             }
@@ -125,7 +138,7 @@ namespace AcrCleanup
             {
                 foreach (var e in ae.InnerExceptions)
                 {
-                    log.LogError(e.Message);
+                    Log.LogError(e.Message);
                 }
             }
         }
