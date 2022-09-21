@@ -37,7 +37,7 @@ jobs:
           docker tag busybox:1.34 cracrcleanupcitest.azurecr.io/test:latest && docker push cracrcleanupcitest.azurecr.io/test:latest
           docker tag busybox:1.35 cracrcleanupcitest.azurecr.io/test:latest && docker push cracrcleanupcitest.azurecr.io/test:latest
       - name: Wait for ACR Cleanup
-        run: sleep 90
+        run: sleep 180
       - name: Check for untagged manifests (must be zero)
         run: "[ $(az acr repository show-manifests --name cracrcleanupcitest --repository test --query '[?tags[0]==null]' | jq -r '.[].digest' | wc -l) -eq 0 ]"
       - name: Clean up ARM deployment
