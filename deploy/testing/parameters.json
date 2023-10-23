@@ -14,12 +14,6 @@
         "storageAccountName": {
             "value": "stacrcleanupcitest"
         },
-        "sku": {
-            "value": "Dynamic"
-        },
-        "skuCode": {
-            "value": "Y1"
-        },
         "use32BitWorkerProcess": {
             "value": true
         },
