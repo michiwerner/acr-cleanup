@@ -11,9 +11,6 @@
         "hostingPlanName": {
             "value": "asp-acr-cleanup-ci-test"
         },
-        "serverFarmResourceGroup": {
-            "value": "rg-acr-cleanup-ci-test"
-        },
         "alwaysOn": {
             "value": false
         },
