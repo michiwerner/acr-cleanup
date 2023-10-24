@@ -120,7 +120,7 @@
                     "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
                     "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
                 },
-                "serverFarmId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                "serverFarmId": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
                 "clientAffinityEnabled": false,
                 "virtualNetworkSubnetId": null
             },
