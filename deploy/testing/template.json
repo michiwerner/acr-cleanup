@@ -8,6 +8,12 @@
         "location": {
             "type": "string"
         },
+        "hostingPlanName": {
+            "type": "string"
+        },
+        "serverFarmResourceGroup": {
+            "type": "string"
+        },
         "alwaysOn": {
             "type": "bool"
         },
@@ -18,6 +24,21 @@
             "type": "string"
         },
         "netFrameworkVersion": {
+            "type": "string"
+        },
+        "sku": {
+            "type": "string"
+        },
+        "skuCode": {
+            "type": "string"
+        },
+        "workerSize": {
+            "type": "string"
+        },
+        "workerSizeId": {
+            "type": "string"
+        },
+        "numberOfWorkers": {
             "type": "string"
         },
         "cleanupSchedule": {
