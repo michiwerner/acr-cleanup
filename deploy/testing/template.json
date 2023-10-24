@@ -11,9 +11,6 @@
         "hostingPlanName": {
             "type": "string"
         },
-        "serverFarmResourceGroup": {
-            "type": "string"
-        },
         "alwaysOn": {
             "type": "bool"
         },
@@ -80,7 +77,8 @@
             "tags": {},
             "dependsOn": [
                 "[concat('Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
-                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]"
+                "[concat('Microsoft.Storage/storageAccounts/', parameters('storageAccountName'))]",
+                "Microsoft.Resources/deploymentScripts/WaitForASP"
             ],
             "identity": {
                 "type": "SystemAssigned"
@@ -122,7 +120,7 @@
                     "use32BitWorkerProcess": "[parameters('use32BitWorkerProcess')]",
                     "netFrameworkVersion": "[parameters('netFrameworkVersion')]"
                 },
-                "serverFarmId": "[concat('/subscriptions/', subscription().subscriptionId, '/resourcegroups/', parameters('serverFarmResourceGroup'), '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
+                "serverFarmId": "[concat(resourceGroup().id, '/providers/Microsoft.Web/serverfarms/', parameters('hostingPlanName'))]",
                 "clientAffinityEnabled": false,
                 "virtualNetworkSubnetId": null
             },
@@ -143,22 +141,45 @@
             ]
         },
         {
-            "apiVersion": "2018-11-01",
-            "name": "[parameters('hostingPlanName')]",
             "type": "Microsoft.Web/serverfarms",
+            "apiVersion": "2022-09-01",
+            "name": "[parameters('hostingPlanName')]",
             "location": "[parameters('location')]",
-            "kind": "",
-            "tags": {},
-            "dependsOn": [],
-            "properties": {
-                "name": "[parameters('hostingPlanName')]",
-                "workerSize": "[parameters('workerSize')]",
-                "workerSizeId": "[parameters('workerSizeId')]",
-                "numberOfWorkers": "[parameters('numberOfWorkers')]"
-            },
             "sku": {
-                "Tier": "[parameters('sku')]",
-                "Name": "[parameters('skuCode')]"
+                "name": "Y1",
+                "tier": "Dynamic",
+                "size": "Y1",
+                "family": "Y",
+                "capacity": 0
+            },
+            "kind": "functionapp",
+            "properties": {
+                "perSiteScaling": false,
+                "elasticScaleEnabled": false,
+                "maximumElasticWorkerCount": 1,
+                "isSpot": false,
+                "reserved": false,
+                "isXenon": false,
+                "hyperV": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0,
+                "zoneRedundant": false
+            }
+        },
+        {
+            "type": "Microsoft.Resources/deploymentScripts",
+            "apiVersion": "2020-10-01",
+            "kind": "AzurePowerShell",
+            "name": "WaitForASP",
+            "location": "[parameters('location')]",
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', parameters('hostingPlanName'))]"
+            ],
+            "properties": {
+                "azPowerShellVersion": "3.0",
+                "scriptContent": "start-sleep -Seconds 30",
+                "cleanupPreference": "Always",
+                "retentionInterval": "PT1H"
             }
         },
         {

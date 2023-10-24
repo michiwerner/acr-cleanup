@@ -9,10 +9,7 @@
             "value": "eastus"
         },
         "hostingPlanName": {
-            "value": "ASP-acr-cleanup-ci-test"
-        },
-        "serverFarmResourceGroup": {
-            "value": "rg-acr-cleanup-ci-test"
+            "value": "asp-acr-cleanup-ci-test"
         },
         "alwaysOn": {
             "value": false
