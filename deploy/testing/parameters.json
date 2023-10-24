@@ -8,6 +8,12 @@
         "location": {
             "value": "eastus"
         },
+        "hostingPlanName": {
+            "value": "asp-acr-cleanup-ci-test"
+        },
+        "serverFarmResourceGroup": {
+            "value": "rg-acr-cleanup-ci-test"
+        },
         "alwaysOn": {
             "value": false
         },
@@ -19,6 +25,15 @@
         },
         "skuCode": {
             "value": "Y1"
+        },
+        "workerSize": {
+            "value": "0"
+        },
+        "workerSizeId": {
+            "value": "0"
+        },
+        "numberOfWorkers": {
+            "value": "1"
         },
         "use32BitWorkerProcess": {
             "value": true
